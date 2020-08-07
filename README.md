@@ -1,24 +1,24 @@
 # DevOps Bootcamp Final Project
 
-## Continuous Delivery pipeline for a MERN application
+## Continuous Delivery pipeline and monitoring for a MERN application
 
 CI/CD pipelines allow for a fast response to business needs, while other DevOps practices support stable, secure and predictable services, striking the perfect balance  between stability and the speed of change.
 
-This is a final project by Pedro Tavares for a DevOps Bootcamp course at GeeksHubs Academy.
+This is a final project by Pedro Tavares for a DevOps Bootcamp course at [GeeksHubs Academy](https://geekshubsacademy.com/) (in spanish).
 
 It creates a Continuous Delivery pipeline for a JavaScript/MERN application, with **development**, **staging** and **production** environments, tests and monitoring.
 
-![CI/CD pipeline](https://github.com/ptavaressilva/final_devops_project/blob/master/img/pipeline.png?raw=true) 
+![CI/CD pipeline](https://raw.githubusercontent.com/ptavaressilva/final_devops_project/master/img/pipeline.png) 
 
-### Requirements
+### Requirements and coverage
 
-- The application must be containerized
-- The application must communicate with a database
-- It must be possible to test the pipeline locally (e.g. not require a cloud provider account)
-- Pushing to master must trigger a pipeline that terminates with a deployment to production (Continuous Delivery)
-- The pipeline must include Development, Staging and Production environments
-- The system must include application and infrastructure monitoring and a dashboard
-- Containers must be managed with an orchestrator
+- [x] The application must be containerized
+- [x] The application must communicate with a database
+- [x] Containers must be managed with an orchestrator
+- [ ] It must be possible to test the pipeline locally (e.g. not require a cloud provider account)
+- [ ] Pushing to master must trigger a pipeline that terminates with a deployment to production (Continuous Delivery)
+- [ ] The pipeline must include Development, Staging and Production environments
+- [ ] The system must include application and infrastructure monitoring and a dashboard
 
 *The actual software application falls outside the scope of this project.*
 
@@ -46,7 +46,7 @@ The development environment has three containers:
 - Nodemon (backend)
 - MongoDB (database)
 
-![Development environment containers](https://github.com/ptavaressilva/final_devops_project/blob/master/img/dev.png?raw=true)
+![Development environment containers](https://raw.githubusercontent.com/ptavaressilva/final_devops_project/master/img/dev.png)
 
 ## Running the project
 
@@ -55,5 +55,7 @@ The development environment has three containers:
 To manually start the application in a development environment you need Docker Desktop and Docker-Compose installed and the you need to run the following command in the repo root:
 
 ```bash
-docker-compose -f docker-compose.dev.yml down
+docker-compose -f docker-compose.dev.yml up
 ```
+
+Once it (builds and) launches the containers, you can access the application on [http://localhost:3000](http://localhost:3000)
