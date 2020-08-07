@@ -1,0 +1,14 @@
+FROM node
+
+WORKDIR /app/client
+
+COPY yarn.lock /app/client/
+COPY package*.json /app/client/
+
+# Install dependencies
+RUN yarn install
+
+COPY . .
+RUN ls
+
+CMD ["yarn", "start"]

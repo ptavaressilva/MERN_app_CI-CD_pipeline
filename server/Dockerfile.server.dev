@@ -1,0 +1,22 @@
+FROM node
+
+# Creates /app/server folder aand sets it as the working directory for any RUN, CMD, ENTRYPOINT, 
+# COPY and ADD instructions that follow it
+WORKDIR /app
+RUN mkdir ./server
+
+# Do not mix npm and yarn. Use only yarn (package-lock.json will not be copied)
+
+COPY ./src ./server
+COPY package.json .
+COPY yarn* .
+
+# Install dependencies
+RUN yarn
+
+# Using nodemon on dev environment for restart on code changes (requires folder mapping - TO DO).
+# On staging and prod COPY should be reeplaced with ADD to make imutable images.
+# (COPY copies files on run. ADD copies files on build)
+RUN yarn global add nodemon
+
+CMD nodemon ./server/server.js

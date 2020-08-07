@@ -1,0 +1,65 @@
+version: "3"
+
+services:
+  ##########################
+  ### SETUP SERVER CONTAINER
+  ##########################
+  server:
+    # Tell docker what file to build the server from
+    build:
+      context: ./server
+      dockerfile: Dockerfile.server.dev
+    # The ports to expose
+    expose:
+      - 4000
+    # Environment variables
+    environment:
+      - MONGO_URI=mongodb://db:27017/db
+      - PORT=4000
+      - JWT_SECRET=secretsecret
+      - JWT_EXPIRY=30d
+      - DEBUG=worker:*
+      - MORGAN=combined
+      - NODE_ENV=development
+    # Port mapping
+    ports:
+      - 4000:4000
+    # Volumes to mount
+    volumes:
+      - ./server/src:/app/server/src
+    # Connect to other containers
+    links:
+      - db
+    # Restart action
+    restart: always
+    stdin_open: true
+  ##########################
+  ### SETUP CLIENT CONTAINER
+  ##########################
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile.client.dev
+    environment:
+      - REACT_APP_PORT=3000
+      - CHOKIDAR_USEPOLLING=true
+    expose:
+      - 3000
+    ports:
+      - 3000:3000
+    volumes:
+      - ./client/src:/app/client/src
+      - ./client/public:/app/client/public
+    links:
+      - server
+    command: npm run start
+    restart: always
+    stdin_open: true
+  ##########################
+  ### SETUP DB CONTAINER
+  ##########################
+  db:
+    image: mongo
+    ports:
+      - 27017:27017
+    restart: always
