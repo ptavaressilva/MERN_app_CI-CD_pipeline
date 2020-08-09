@@ -14,7 +14,7 @@ It creates a Continuous Delivery pipeline for a JavaScript/MERN application, wit
 
 - [x] The application must be containerized
 - [x] The application must communicate with a database
-- [x] Containers must be managed with an orchestrator
+- [x] Containers must be managed by an orchestrator
 - [ ] It must be possible to test the pipeline locally (e.g. not require a cloud provider account)
 - [ ] Pushing to master must trigger a pipeline that terminates with a deployment to production (Continuous Delivery)
 - [ ] The pipeline must include Development, Staging and Production environments
@@ -36,7 +36,11 @@ This section will be updated as the project progresses.
 
 The application placeholder was bootstrapped with [Create React App](https://github.com/facebook/create-react-app), the officially supported way to create single-page React applications.
 
-App and containerization code baseed on [mern-docker-starter](https://github.com/joshdcuneo/mern-docker-starter.git).
+App and containerization code basd on [mern-docker-starter](https://github.com/joshdcuneo/mern-docker-starter.git).
+
+When started, the application creates a user in the database. Whenever a page is requested (to the client), the client calls the server API, which queries the database and returnss the username created at startup.
+
+As **this application falls ouside the scope of the project**, its limitations were not addressed (e.g. it creates the same user every time it starts, so the database will have multiple copies of this user on persistent volumes).
 
 ### Architecture
 
@@ -56,7 +60,7 @@ The development environment has three containers:
 - Nodemon (backend)
 - MongoDB (database)
 
-Additional containers are used to build the static Reacty content and pass it to the Nginx container at build, and .
+Additional containers are used to build the static Reacty content of the client and server, and then pass it to the Nginx and Node containers respectively.
 
 ![Environment containers and volumes](https://raw.githubusercontent.com/ptavaressilva/final_devops_project/master/img/architecture.png)
 
@@ -75,8 +79,8 @@ You can access the application on [http://localhost:3000](http://localhost:3000)
 
 ### Manual start of the staging environment
 
-The staging environment uses a persistent Docker volume, which needs to be created with `docker volume create staging_vol_db` before starting the environment.
+The staging environment uses a persistent Docker volume, which needs to be created with `docker volume create staging_vol_db` before starting the environment for the first time.
 
 To start manually the staging environment use  `docker-compose -f docker-compose.staging.yml up`
 
-You can access the application on [http://localhost](http://localhost)
+You can then access the application on [http://localhost](http://localhost)
