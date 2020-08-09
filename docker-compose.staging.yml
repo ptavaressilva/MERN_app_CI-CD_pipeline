@@ -1,0 +1,45 @@
+version: "3"
+
+services:
+
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile.client.staging
+    ports:
+      - "80:80"
+    links:
+      - server
+    restart: always
+    stdin_open: true
+
+  server:
+      build:
+        context: ./server
+        dockerfile: Dockerfile.server.staging
+      environment:
+        - MONGO_URI=mongodb://${MONGO_INITDB_ROOT_USERNAME}:${MONGO_INITDB_ROOT_PASSWORD}@${MONGO_URI}
+        - PORT=${SRV_PORT}
+        - NODE_ENV=${NODE_ENV}
+      expose:
+        - "${SRV_PORT}"
+      command: node src/server.js
+      links:
+        - db
+      restart: always
+
+  db:
+    image: mongo
+    expose:
+      - "${MONGO_PORT}"
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+    volumes:
+      # don't forget to create the volume with "docker volume create"
+      # before launching docker-compose (see /README.md for details)
+      - staging_vol_db:/data/db
+
+volumes:
+  staging_vol_db:

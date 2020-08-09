@@ -34,11 +34,15 @@ This section will be updated as the project progresses.
 
 ### Application placeholder
 
-The application placeholder was bootstrapped with [Create React App](https://github.com/facebook/create-react-app) and uses code from [mern-docker-starter](https://github.com/joshdcuneo/mern-docker-starter.git).
+The application placeholder was bootstrapped with [Create React App](https://github.com/facebook/create-react-app), the officially supported way to create single-page React applications.
+
+App and containerization code baseed on [mern-docker-starter](https://github.com/joshdcuneo/mern-docker-starter.git).
 
 ### Architecture
 
-### Development environment
+Each environment includes a frontal server to serve static contents and pass API call to the backend, a backend server to query the database and serve API calls, and a database.
+
+In each environment there are subtle changes, to account for the desired use of the environment (development, testing, etc.)
 
 The development environment has three containers:
 
@@ -46,16 +50,33 @@ The development environment has three containers:
 - Nodemon (backend)
 - MongoDB (database)
 
-![Development environment containers](https://raw.githubusercontent.com/ptavaressilva/final_devops_project/master/img/dev.png)
+The development environment has three containers:
+
+- Nginx (frontend)
+- Nodemon (backend)
+- MongoDB (database)
+
+Additional containers are used to build the static Reacty content and pass it to the Nginx container at build, and .
+
+![Environment containers and volumes](https://raw.githubusercontent.com/ptavaressilva/final_devops_project/master/img/architecture.png)
 
 ## Running the project
 
+To run this project you need to install on the host:
+
+- Docker
+- Docker-compose
+
 ### Manual start of the development environment
 
-To manually start the application in a development environment you need Docker Desktop and Docker-Compose installed and the you need to run the following command in the repo root:
+To start manually the development environment, use`docker-compose -f docker-compose.dev.yml up`
 
-```bash
-docker-compose -f docker-compose.dev.yml up
-```
+You can access the application on [http://localhost:3000](http://localhost:3000)
 
-Once it (builds and) launches the containers, you can access the application on [http://localhost:3000](http://localhost:3000)
+### Manual start of the staging environment
+
+The staging environment uses a persistent Docker volume, which needs to be created with `docker volume create staging_vol_db` before starting the environment.
+
+To start manually the staging environment use  `docker-compose -f docker-compose.staging.yml up`
+
+You can access the application on [http://localhost](http://localhost)

@@ -1,0 +1,25 @@
+FROM node:10.9.0-alpine as builder
+
+WORKDIR /app/server
+
+COPY package*.json .
+COPY yarn* .
+
+#! Install the build requirements for bcrypt
+RUN apk update && apk upgrade \
+    && apk --no-cache add --virtual builds-deps build-base python \
+    && yarn add node-gyp node-pre-gyp
+
+# Set production flag so dev dependencies aren't installed
+RUN yarn install --production=true
+
+COPY . .
+
+FROM node:10.9.0-alpine
+
+WORKDIR /app/server
+
+# Copy the server from the build container
+COPY --from=builder /app/server .
+
+CMD ["node", "server.js"]
