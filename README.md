@@ -179,11 +179,11 @@ Go to Jenkins [http://localhost:8000](https://localhost:8000) and click *New Ite
 In the next page, in the *General* tab, provide the values below:
 
 
-| Field              | Value                             |
-| ------------------ | --------------------------------- |
-| Branch source      | Git                               |
-| Project Repository | `http://gogss/gogsadmin/mern_app` |
-| Credentials > Add  | MERN app Continuous Delivery      |
+| Field              | Value                                     |
+| ------------------ | ----------------------------------------- |
+| Branch source      | Git                                       |
+| Project Repository | `http://gogs:3000/gogsadmin/mern_app.git` |
+| Credentials > Add  | MERN app Continuous Delivery              |
 
 In the *Folder Credentials Provider: MERN app Continuous Delivery* pop-up, provide the following values:
 
@@ -196,7 +196,7 @@ Press the *Add* button to return to the pipeline *General* tab.
 
 In the *Credetials* field, select `gogsadmin/****`
 
-In the *Build Configuration* section, leave *by Jenkisfile* selected.
+In the *Build Configuration* tab, leave *by Jenkisfile* selected and insert `ops/Jenkinsfile` in the *Script Path* box.
 
 Below, in the *Scan Multibranch Pipeline Triggers* section, check *"Periodically if not otherwise run"* and set the interval to `1 minute`.
 
