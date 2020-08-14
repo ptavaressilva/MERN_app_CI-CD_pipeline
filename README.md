@@ -8,7 +8,7 @@ This is a final project by Pedro Tavares for a DevOps Bootcamp course at [GeeksH
 
 It creates a Continuous Delivery pipeline for a JavaScript/MERN application, with **development**, **staging** and **production** environments, tests and monitoring.
 
-![CI/CD pipeline](https://github.com/ptavaressilva/MERN_app_CI-CD_pipeline/master/img/pipeline.png) 
+![CI/CD pipeline](https://github.com/ptavaressilva/MERN_app_CI-CD_pipeline/blob/master/img/pipeline.png?raw=true) 
 
 ### Requirements and coverage
 
@@ -42,7 +42,7 @@ App and containerization code basd on [mern-docker-starter](https://github.com/j
 
 When started, the application creates a user in the database. Whenever a page is requested (to the client), the client calls the server API, which queries the database and returnss the username created at startup.
 
-![The application](https://github.com/ptavaressilva/MERN_app_CI-CD_pipeline/master/img/app_page.png)
+![The application](https://github.com/ptavaressilva/MERN_app_CI-CD_pipeline/blob/master/img/app_page.png?raw=true)
 
 As **this application falls ouside the scope of the project**, its limitations were not addressed (e.g. it creates the same user every time it starts, so the database will have multiple copies of this user on persistent volumes).
 
@@ -78,7 +78,7 @@ In each environment there are subtle changes, to account for the desired use of 
 
 - Multiple replicas of the front and backend (imutable) containers can be run with Swarm, to scale capacity according to demand.
 
-![Environment containers and volumes](https://github.com/ptavaressilva/MERN_app_CI-CD_pipeline/master/img/environments.png)
+![Environment containers and volumes](https://github.com/ptavaressilva/MERN_app_CI-CD_pipeline/blob/master/img/environments.png?raw=true)
 
 ## Running the project
 
@@ -100,7 +100,7 @@ To create the pipeline run the `./scripts/create_pipeline.h` script.
 
 Use `docker service ls` to know when the services have running replicas (indicated as `1/1` under REPLICAS)
 
-![Ops containers](https://github.com/ptavaressilva/MERN_app_CI-CD_pipeline/master/img/ops.png)
+![Ops containers](https://github.com/ptavaressilva/MERN_app_CI-CD_pipeline/blob/master/img/ops.png?raw=true)
 
 ### Configure Gogs
 
