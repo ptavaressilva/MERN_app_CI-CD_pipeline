@@ -1,6 +1,7 @@
-version: "3"
+version: "3.8"
 
 services:
+  
   client:
     build:
       context: ./client
@@ -8,20 +9,25 @@ services:
     environment:
       - REACT_APP_PORT=3000
       - CHOKIDAR_USEPOLLING=true
+    image: client
+    labels:
+      - "standalone=dev"
     ports:
       - 3000:3000
     volumes:
       - ./client/src:/app/client/src
       - ./client/public:/app/client/public
-    links:
-      - server
     command: npm run start
     restart: always
     stdin_open: true
+  
   server:
     build:
       context: ./server
       dockerfile: Dockerfile.server.dev
+    image: server
+    labels:
+      - "standalone=dev"
     expose:
       - 4000
     environment:
@@ -30,11 +36,12 @@ services:
       - NODE_ENV=development
     volumes:
       - ./server/src:/app/server/src
-    links:
-      - db
     restart: always
+  
   db:
     image: mongo
+    labels:
+      - "standalone=dev"
     expose:
         - 27017
     restart: always

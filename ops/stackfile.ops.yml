@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+
+  gogs:
+    image: gogs/gogs
+    volumes:
+      - gogs:/data
+    ports:
+      - "10022:22"  # SSH
+      - "9001:3000" # web UI at localhost:9001
+    networks:
+      - ops
+    deploy:
+      replicas: 1
+
+  registry:
+    image: registry
+    volumes:
+      - registry:/var/lib/registry
+    ports:
+    - 5000:5000
+    networks: 
+      - ops
+    deploy:
+      replicas: 1
+
+  jenkins:
+    image: ops_jenkins # This image must be built in advance - see  create_pipeline.sh
+    ports:
+      - "8000:8080"
+    # port 50000 is required if you use more than one swarm node
+    #   - "50000:50000"
+    volumes:
+      - jenkins:/var/jenkins_home
+  # Docker in docker, but using host (container) Docker engine
+      - /var/run/docker.sock:/var/run/docker.sock # Unix socket the Docker daemon listens on by default
+    networks: 
+      - ops
+      - prod
+      - non_prod
+    deploy:
+      replicas: 1
+
+networks:    
+  ops:    
+  prod:
+  non_prod:
+
+volumes:
+  gogs:
+  registry:
+  jenkins:
