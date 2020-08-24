@@ -104,38 +104,40 @@ The following folders on your computer will be mapped to frontend and backend se
 
 You can then access the application on [http://localhost:3000](http://localhost:3000)
 
-### Creating the pipeline
-
-To create the pipeline run the `docker-compose -f ./ops/docker-compose.ops.yml up -d` command.
-
-Use `docker ps` to know when the services have running containers (containers running images *gogs/gogs*, *ops_jenkins* and *registry*))
+## Creating the pipeline
 
 ![Ops containers](https://github.com/ptavaressilva/MERN_app_CI-CD_pipeline/blob/master/img/ops.png?raw=true)
 
-### Configure Gogs
-
-Gogs is "a painless self-hosted Git service", that we'll use as a source code repository in our pipeline (SCM).
+### Step 1 - Configure Gogs
 
 On startup, Gogs is served at port 3000, which will be used for our dev frontend, so we will change the Gogs port to 9001.
 
-To configure Gogs, start by connecting to the Gogs webpage on [http://localhost:3000](http://localhost:3000) and configure the following parameters in the *Install Steps For First-time Run* page:
+Start Gogs with:
 
-| Parameter                                                | Value                    |
-| -------------------------------------------------------- | ------------------------ |
-| Database Type                                            | SQLite3                  |
-| HTTP Port                                                | 9001                     |
-| Application URL                                          | `http://localhost:9001`/ |
-| Admin Account Settings / Username                        | gogsadmin                |
-| Admin Account Settings / Password (and confirm password) | gogssecret               |
-| Admin Account Settings / email                           | a@a.a                    |
+`docker-compose -f ./ops/docker-compose.gogs3000.yml up -d`
 
-Hit the *"Install Gogs"* button to finish the configuration. **It will will not find the page, but that's ok**. The container needs to restart, to pick up the port change.
+Connect to the Gogs webpage on [http://localhost:3000](http://localhost:3000) and configure the following parameters in the *Install Steps For First-time Run* page:
 
-```bash
-docker restart ops_gogs_1
-```
+| Parameter                                                | Value               |
+| -------------------------------------------------------- | ------------------- |
+| Database Type                                            | SQLite3             |
+| HTTP Port                                                | 9001                |
+| Application URL                                          | `http://gogs:9001`/ |
+| Admin Account Settings / Username                        | gogsadmin           |
+| Admin Account Settings / Password (and confirm password) | gogssecret          |
+| Admin Account Settings / email                           | a@a.a               |
 
-Once the Gogs container restarts, you can reach Gogs at `http://localhost:9001`, and log-in with the user and password in the table above.
+Hit the *"Install Gogs"* button to finish the configuration. **It will will not find the page, but that's ok**. The configuration says Gogs should use the port 9001, but the container needs to restart to pick up the port change. For now we are done with Gogs on port 3000, so shut it down with:
+
+`docker-compose -f ./ops/docker-compose.gogs3000.yml down`
+
+Doon't worry! Your configuration in saved in the `gogs` docker volume.
+
+### Step 2 - start Jenkins, Registry and Gogs
+
+Start Jenkins, Docker Registry and Gogs (now oon port 9001) with the command:
+
+`docker-compose -f ./ops/docker-compose.ops.yml up -d`
 
 ### Configure Jenkins
 
