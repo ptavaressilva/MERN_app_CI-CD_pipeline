@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # This script needs to be executed on a swarm manager node
 
 # Create Jenkins image

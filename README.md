@@ -86,19 +86,29 @@ Typically a developer wants a standalone development environment on her/his loca
 
 Once code is ready, the developer pushes that code to the SCM repository (Gogs in our case), triggering the Continuous Delivery pipeline, and eventually releasing the code change to production.
 
-### Create the local development environment
+### Create a local development environment
 
 To create a local development environment (on the developer's machine) the machine needs to have docker and docker-compose installed.
 
 To create/start the development environment, use the script `./scripts/create_local_dev.sh`
 
-You canthen access the application on [http://localhost:3000](http://localhost:3000)
+The following folders on your computer will be mapped to frontend and backend server foldders:
+
+| Folder on your computer | Server (container) | Folder on server   |
+| ----------------------- | ------------------ | ------------------ |
+| ./client/src            | Frontend           | /app/client/src    |
+| ./client/public         | Frontend           | /app/client/public |
+| ./server/src            | Backend            | /app/server/src    |
+
+**Note:** when Jenkins builds and deploys the dev environment, the contents is copied to the container (not mapped).
+
+You can then access the application on [http://localhost:3000](http://localhost:3000)
 
 ### Creating the pipeline
 
-To create the pipeline run the `./scripts/create_pipeline.h` script. 
+To create the pipeline run the `docker-compose -f ./ops/docker-compose.ops.yml up -d` command.
 
-Use `docker service ls` to know when the services have running replicas (indicated as `1/1` under REPLICAS)
+Use `docker ps` to know when the services have running containers (containers running images *gogs/gogs*, *ops_jenkins* and *registry*))
 
 ![Ops containers](https://github.com/ptavaressilva/MERN_app_CI-CD_pipeline/blob/master/img/ops.png?raw=true)
 
@@ -106,23 +116,30 @@ Use `docker service ls` to know when the services have running replicas (indicat
 
 Gogs is "a painless self-hosted Git service", that we'll use as a source code repository in our pipeline (SCM).
 
-To configure Gogs, start by connecting to the Gogs webpage on [http://localhost:9001](http://localhost:9001) and configure the following parameters in the *Install Steps For First-time Run* page:
+On startup, Gogs is served at port 3000, which will be used for our dev frontend, so we will change the Gogs port to 9001.
 
-| Parameter                                                | Value                  |
-| -------------------------------------------------------- | ---------------------- |
-| Database Type                                            | SQLite3                |
-| Application URL                                          | http://localhost:9001/ |
-| Admin Account Settings / Username                        | gogsadmin              |
-| Admin Account Settings / Password (and confirm password) | gogssecret             |
-| Admin Account Settings / email                           | your@email.com         |
+To configure Gogs, start by connecting to the Gogs webpage on [http://localhost:3000](http://localhost:3000) and configure the following parameters in the *Install Steps For First-time Run* page:
 
-**Don't change the *HTTP Port* to 9000!**
+| Parameter                                                | Value                    |
+| -------------------------------------------------------- | ------------------------ |
+| Database Type                                            | SQLite3                  |
+| HTTP Port                                                | 9001                     |
+| Application URL                                          | `http://localhost:9001`/ |
+| Admin Account Settings / Username                        | gogsadmin                |
+| Admin Account Settings / Password (and confirm password) | gogssecret               |
+| Admin Account Settings / email                           | a@a.a                    |
 
-Hit the *"Install Gogs"* button and create a Gogs repository using the + dropdown on the top right corner. Call it *mern_app* and hit the *Create Repository* button to finish.
+Hit the *"Install Gogs"* button to finish the configuration. **It will will not find the page, but that's ok**. The container needs to restart, to pick up the port change.
+
+```bash
+docker restart ops_gogs_1
+```
+
+Once the Gogs container restarts, you can reach Gogs at `http://localhost:9001`, and log-in with the user and password in the table above.
 
 ### Configure Jenkins
 
-Use the `docker service logs cicd_stack_jenkins` command to view the Jenkins service logs and find the installation password, in a segment looking like this:
+Use the `docker logs $(docker ps --filter name=ops_jenkins_1 -q)` command to view the Jenkins service logs and find the installation password, in a segment looking like this:
 
 ```bach
 cicd_stack_jenkins.1.jft378dfo4tm@docker-desktop    | *************************************************************
@@ -153,9 +170,19 @@ After the pluggins finish installing, in the *Create First Admin User* page, cre
 
 In the *Instance Configuration* page leave the URL as `http://localhost:8000/` and press the *Save and finish* button.
 
-### Clone the remote mern app repository
+#### Optional: install Blue Ocean plugin
 
-To use the pipeline you need to clone the Gogs `mern_app` repository you created above into a folder that must reside outside the folder where you cloned this [MERN_app_CI-CD_pipeline](https://github.com/ptavaressilva/MERN_app_CI-CD_pipeline) project.
+To install the additional plugins needed, go to *Manage Jenkins* (left-hand menu) > *Manage Plugins*, then click on the *Available* tab.
+
+Type `Blue Ocean`on the text box and check the box for the pluggin with that name, then press *Download and install after restart*.
+
+Finally, check the *Restart Jenkins when installation is complete and no jobs are running* checkbox at the bottom of the page.
+
+### Create and clone the remote mern app repository
+
+Go to <http://localhost:9001/gogsadmin> and create a Gogs repository using the + dropdown on the top right corner. Call it `mern_app` and hit the *Create Repository* button.
+
+To use the pipeline you need to clone the Gogs `mern_app` repository created above into a folder in your computer that must reside outside the folder where you cloned this [MERN_app_CI-CD_pipeline](https://github.com/ptavaressilva/MERN_app_CI-CD_pipeline) project.
 
 ```bash
 cd ..
@@ -182,23 +209,27 @@ In the next page, in the *General* tab, provide the values below:
 | Field              | Value                                     |
 | ------------------ | ----------------------------------------- |
 | Branch source      | Git                                       |
-| Project Repository | `http://gogs:3000/gogsadmin/mern_app.git` |
+| Project Repository | `http://gogs:9001/gogsadmin/mern_app.git` |
 | Credentials > Add  | MERN app Continuous Delivery              |
 
 In the *Folder Credentials Provider: MERN app Continuous Delivery* pop-up, provide the following values:
 
-| Field    | Valiue     |
-| -------- | ---------- |
-| Username | gogsadmin  |
-| Password | gogssecret |
+| Field    | Valiue       |
+| -------- | ------------ |
+| Username | `gogsadmin`  |
+| Password | `gogssecret` |
 
 Press the *Add* button to return to the pipeline *General* tab.
 
-In the *Credetials* field, select `gogsadmin/****`
+In the *Credetials* field, select gogsadmin/****
 
 In the *Build Configuration* tab, leave *by Jenkisfile* selected and insert `ops/Jenkinsfile` in the *Script Path* box.
 
 Below, in the *Scan Multibranch Pipeline Triggers* section, check *"Periodically if not otherwise run"* and set the interval to `1 minute`.
+
+Declarative Pipeline (Docker) > Docker registry URL = http://gogs:9001/
+Registry credentials --> select gogsadmin
+
 
 Press the *Save* button at the bottom of the page. Jenkins is configured!
 
@@ -217,6 +248,3 @@ git push origin master
 When prompted, provide `gogsadmin` as username and `gogssecret` as password.
 
 Now you can go to the Jenkins page on [http://localhost:8000](https://localhost:8000) and watch the pipeline execute.
-(https://github.com/ptavaressilva/MERN_app_CI-CD_pipeline)
-
-> Note: at this time the pipeline is populated and pushing a commit will trigger a pipeline that just echoes some phrases. This will be improved uppon in the next update.

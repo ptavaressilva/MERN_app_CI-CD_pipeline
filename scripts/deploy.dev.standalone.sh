@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # builds the development environment
 docker-compose -f docker-compose.dev.yml build
 
