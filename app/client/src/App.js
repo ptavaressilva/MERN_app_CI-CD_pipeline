@@ -8,7 +8,7 @@ class App extends Component {
         welcome: "..."
     };
 
-    componentDidMount = async() => {
+    componentDidMount = async () => {
         try {
             const res = await axios.get("/welcome");
             console.log(res);
@@ -20,8 +20,8 @@ class App extends Component {
         }
     };
     render() {
-        return ( <
-            div className = "App" >
+        return (<
+            div className="App" >
             <
             h1 > "Hello server!"
             says the client < /h1> <

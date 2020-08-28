@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+
+  gogs:
+    image: gogs/gogs
+    volumes:
+      - gogs:/data
+    ports:
+      - "10022:22"
+      - "9001:9001"
+    networks:
+      - ops_overlay_network
+  
+  jenkins:
+    build:
+      context: .
+      dockerfile: ./Dockerfiles/Dockerfile.jenkins
+    ports:
+      - "8000:8080"
+      - "50000:50000"
+    volumes:
+      - jenkins:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock # Share the host  docker socket with the container
+    networks:
+      - ops_overlay_network
+
+  # jest:
+  #   build:
+  #     context: .
+  #     dockerfile: ./Dockerfiles/Dockerfile.jest
+  #   ports:
+  #     - "8888:8888"
+  #   working_dir: /home/node/app
+  #   volumes:
+  #     - ./tests:/tests
+
+  registry:
+    image: registry
+    volumes:
+      - registry:/var/lib/registry
+    ports:
+      - 5000:5000
+    networks:
+      - ops_overlay_network
+
+volumes:
+  gogs: {}
+  jenkins: {}
+  registry: {}
+
+networks:
+  ops_overlay_network:

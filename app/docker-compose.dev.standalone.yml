@@ -12,8 +12,11 @@ services:
     image: client
     ports:
       - 3000:3000
+    volumes:
+      - ./client/src:/app/client/src
+      - ./client/public:/app/client/public
     command: npm run start
-    restart: "no"
+    restart: always
     stdin_open: true
   
   server:
@@ -27,9 +30,8 @@ services:
       - NODE_ENV=development
     volumes:
       - ./server/src:/app/server/src
-    restart: "no"
+    restart: always
   
   db:
     image: mongo
-    restart: "no"
-    
+    restart: always

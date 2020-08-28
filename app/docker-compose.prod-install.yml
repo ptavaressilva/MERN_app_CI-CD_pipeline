@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   client:
-    image: localhost:5000/client_${GIT_COMMIT}
+    image: localhost:5000/client_install
     deploy:
       replicas: 3
       update_config:
@@ -13,7 +13,7 @@ services:
     stdin_open: true
 
   server:
-    image: localhost:5000/server_${GIT_COMMIT}
+    image: localhost:5000/server_install
     deploy:
       replicas: 3
       update_config:
@@ -26,7 +26,7 @@ services:
     command: node src/server.js
 
   db:
-    image: localhost:5000/db_${GIT_COMMIT}
+    image: localhost:5000/db_install
     deploy:
       replicas: 1
       update_config:
@@ -36,7 +36,11 @@ services:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
     volumes:
+      # don't forget to create the volume with "docker volume create"
+      # before deploying stack (see /README.md for details)
       - db_prod:/data/db
 
+# front (client) and backend (server) data included in the 
+# image (imutable containers), so no volumes are needed
 volumes:
   db_prod:

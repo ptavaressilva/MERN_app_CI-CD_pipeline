@@ -1,51 +1,33 @@
-#
-# WIP: use the commit hash as the image tag.
-#      git log -1 --pretty=%H
-
-version: "3"
+version: "3.8"
 
 services:
 
   client:
     build:
       context: ./client
-      dockerfile: 
-        Dockerfile.client.staging
+      dockerfile: Dockerfile.client.staging
     image: client
     ports:
       - "8080:8080"
-    links:
-      - server
-    # restart: always
     stdin_open: true
 
   server:
-      build:
-        context: ./server
-        dockerfile: Dockerfile.server.staging
-      image: server
-      environment:
-        - MONGO_URI=mongodb://${MONGO_INITDB_ROOT_USERNAME}:${MONGO_INITDB_ROOT_PASSWORD}@${MONGO_URI}
-        - PORT=${SRV_PORT}
-        - NODE_ENV=${NODE_ENV}
-      expose:
-        - "${SRV_PORT}"
-      command: node src/server.js
-      links:
-        - db
-      # restart: always
+    build:
+      context: ./server
+      dockerfile: Dockerfile.server.staging
+    image: server
+    environment:
+      - MONGO_URI=mongodb://${MONGO_INITDB_ROOT_USERNAME}:${MONGO_INITDB_ROOT_PASSWORD}@${MONGO_URI}
+      - PORT=${SRV_PORT}
+      - NODE_ENV=${NODE_ENV}
+    command: node src/server.js
 
   db:
     image: mongo
-    expose:
-      - "${MONGO_PORT}"
-    # restart: always
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
     volumes:
-      # don't forget to create the volume with "docker volume create"
-      # before launching docker-compose (see /README.md for details)
       - db_staging:/data/db
 
 volumes:

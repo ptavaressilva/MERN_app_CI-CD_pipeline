@@ -1,9 +1,15 @@
-FROM node:10.9.0-alpine as builder
+FROM node:10.13.0-alpine as builder
 
 WORKDIR /app/server
 
 COPY package*.json .
 COPY yarn* .
+
+ENV MONGO_URI=$MONGO_URI
+ENV PORT=$SRV_PORT
+ENV NODE_ENV=$NODE_ENV
+
+RUN printenv
 
 #! Install the build requirements for bcrypt
 RUN apk update && apk upgrade \
@@ -15,11 +21,17 @@ RUN yarn install --production=true
 
 COPY . .
 
-FROM node:10.9.0-alpine
+FROM node:10.13.0-alpine
 
 WORKDIR /app/server
 
 # Copy the server from the build container
 COPY --from=builder /app/server .
+
+ENV MONGO_URI=$MONGO_URI
+ENV PORT=$SRV_PORT
+ENV NODE_ENV=$NODE_ENV
+
+RUN printenv
 
 CMD ["node", "server.js"]

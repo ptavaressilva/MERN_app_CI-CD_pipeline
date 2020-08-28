@@ -1,52 +1,117 @@
 pipeline {
     agent any
+    environment {
+        SRV_PORT                   = credentials('SRV_PORT')
+        MONGO_URI                  = credentials('MONGO_URI')
+        MONGO_PORT                 = credentials('MONGO_PORT')
+        MONGO_INITDB_ROOT_USERNAME = credentials('MONGO_INITDB_ROOT_USERNAME')
+        MONGO_INITDB_ROOT_PASSWORD = credentials('MONGO_INITDB_ROOT_PASSWORD')
+        NODE_ENV                   = credentials('NODE_ENV')
+    }
     stages {
-        stage('Preparations') {
+        stage('Build and run dev') {
             steps {
-                script {
-                    echo "Preparing!"
+                echo "Branch: ${GIT_BRANCH}    Commit: ${GIT_COMMIT}"
+                echo "Jenkins node: ${NODE_NAME}    Build tag: ${BUILD_TAG}"
+                echo "Jenkins workspace: ${WORKSPACE}"
+                dir("./app") {
+                    sh 'docker-compose -f docker-compose.dev.yml up -d --build'
                 }
             }
         }
-        stage('Test') {
+        stage('Unit tests') {
             steps {
-                script {
-                    echo "Testing!"
+                sh 'docker exec app_client_1 npm test'
+            }
+            post { // clean-up dev
+                always {
+                    dir("./app") {
+                        sh 'docker-compose -f docker-compose.dev.yml down'
+                        sh 'docker rmi client'
+                        sh 'docker rmi server'
+                    }
                 }
             }
         }
-        stage('Build') {
+        stage('Build and run staging') {
             steps {
-                script {
-                    echo "Building!"
+                dir("./app") {
+                    sh 'docker-compose -f docker-compose.staging.yml up -d --build'
+                    // sh 'docker network connect ops_overlay_network app_client_1'
+                    // sh 'docker network connect ops_overlay_network app_server_1'
+                    // sh 'docker network connect ops_overlay_network app_db_1'
                 }
             }
         }
-        stage('Push docker image') {
+        stage('Integration tests') {
             steps {
-                script {
-                    echo "Pushing Docker images!"
-                }
-            }
-        }
-    }
-    post {
-        always {
-            echo 'This will always run'
-        }
-        success {
-            echo 'This will run only if successful'
-        }
-        failure {
-            echo 'This will run only if failed'
-        }
-        unstable {
-            echo 'This will run only if the run was marked as unstable'
-        }
-        changed {
-            echo 'This will run only if the state of the Pipeline has changed'
-            echo 'For example, if the Pipeline was previously failing but is now successful'
-        }
-    }
+                echo "Run integration tests"
 
+                // Stop staging environment 
+                dir("./app") {
+                    sh 'docker-compose -f docker-compose.staging.yml down'
+                }
+            }
+            post { // If tests fail, remove failed staging images
+                failure {
+                    dir("./app") {
+                        sh 'docker-compose -f docker-compose.staging.yml down'
+                    }
+                    sh 'docker rmi client'
+                    sh 'docker rmi server'
+                }
+            }
+        }
+        stage('Push images to Registry') {
+            steps {
+                // tag images
+                sh "docker image tag client localhost:5000/client_${GIT_COMMIT}"
+                sh "docker image tag server localhost:5000/server_${GIT_COMMIT}"
+                sh "docker image tag mongo localhost:5000/db_${GIT_COMMIT}"
+                // push images
+                sh "docker push localhost:5000/client_${GIT_COMMIT}"
+                sh "docker push localhost:5000/server_${GIT_COMMIT}"
+                sh "docker push localhost:5000/db_${GIT_COMMIT}"
+            }
+            post {
+                always {
+                    // remove local images
+                    sh "docker rmi localhost:5000/client_${GIT_COMMIT}"
+                    sh "docker rmi localhost:5000/server_${GIT_COMMIT}"
+                    sh "docker rmi localhost:5000/db_${GIT_COMMIT}"
+                    sh "docker rmi client"
+                    sh "docker rmi server"
+                    sh "docker rmi mongo"
+                }
+            }
+        }
+        stage('Deploy to prod') {
+            when {
+                branch 'master'
+            }
+            steps {
+                dir("./app") {
+                     // Rolling update to production (waits for update to finish)
+                    sh 'docker service update --image localhost:5000/client_${GIT_COMMIT} prod_client'
+                    sh 'docker service update --image localhost:5000/server_${GIT_COMMIT} --env-add MONGO_URI=mongodb://${MONGO_INITDB_ROOT_USERNAME}:${MONGO_INITDB_ROOT_PASSWORD}@${MONGO_URI} --env-add PORT=${SRV_PORT} --env-add NODE_ENV=${NODE_ENV} prod_server'
+                    sh 'docker service update --image localhost:5000/db_${GIT_COMMIT} --env-add MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME} --env-add MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD} prod_db'
+                }
+            }
+        }
+        // stage('Smoke tests and roll-back if needed') {
+        //     when {
+        //         branch 'master'
+        //     }
+        //     steps {
+        //         sh "curl 'http://localhost'"
+        //     }
+        //     post {
+        //         failure {
+        //             sh "docker service rollback prod_client"
+        //             sh "docker service rollback prod_server"
+        //             sh "docker service rollback prod_db"
+        //         }
+        //     }
+        // }
+    }
 }

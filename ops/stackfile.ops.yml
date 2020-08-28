@@ -15,16 +15,26 @@ services:
       replicas: 1
 
   registry:
-    image: registry
-    volumes:
-      - registry:/var/lib/registry
+    image: registry:2
+    # volumes:
+    #   - registry:/var/lib/registry
     ports:
     - 5000:5000
     networks: 
       - ops
+      - ingress
     deploy:
       replicas: 1
 
+  # registry_ui:
+  #   image: joxit/docker-registry-ui:latest
+  #   ports:
+  #   - 5001:80
+  #   networks: 
+  #     - ops
+  #   deploy:
+  #     replicas: 1
+  
   jenkins:
     image: ops_jenkins # This image must be built in advance - see  create_pipeline.sh
     ports:

@@ -1,0 +1,7 @@
+FROM node:12.15-alpine
+
+RUN yarn add --dev jest
+
+EXPOSE 8888
+
+CMD jest /tests/integration.test.js --notify --config=/tests/config.json

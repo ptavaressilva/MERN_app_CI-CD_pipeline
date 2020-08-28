@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+
+  gogs:
+    image: gogs/gogs
+    volumes:
+      - gogs:/data
+    ports:
+      - "10022:22"
+      - "3000:3000"
+      - "9001:9001"
+
+volumes:
+  gogs: {}
