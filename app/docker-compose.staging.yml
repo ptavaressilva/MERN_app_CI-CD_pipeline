@@ -17,16 +17,16 @@ services:
       dockerfile: Dockerfile.server.staging
     image: server
     environment:
-      - MONGO_URI=mongodb://${MONGO_INITDB_ROOT_USERNAME}:${MONGO_INITDB_ROOT_PASSWORD}@${MONGO_URI}
-      - PORT=${SRV_PORT}
-      - NODE_ENV=${NODE_ENV}
+      - MONGO_URI=$MONGO_URI
+      - PORT=$SRV_PORT
+      - NODE_ENV=$NODE_ENV
     command: node src/server.js
 
   db:
     image: mongo
     environment:
-      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+      MONGO_INITDB_ROOT_USERNAME: $MONGO_INITDB_ROOT_USERNAME
+      MONGO_INITDB_ROOT_PASSWORD: $MONGO_INITDB_ROOT_PASSWORD
     volumes:
       - db_staging:/data/db
 

@@ -1,6 +1,5 @@
 node_modules
 .env*
-./pipeline/ubuntu*
-./pipeline/.vagrant
 ./ops/push.sh
 .DS_Store
+/ops/var

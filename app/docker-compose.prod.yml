@@ -19,10 +19,10 @@ services:
       update_config:
         parallelism: 1
         delay: 10s
-    environment:
-      - MONGO_URI=mongodb://${MONGO_INITDB_ROOT_USERNAME}:${MONGO_INITDB_ROOT_PASSWORD}@${MONGO_URI}
-      - PORT=${SRV_PORT}
-      - NODE_ENV=${NODE_ENV}
+    # environment:
+    #   - MONGO_URI=$MONGO_URI
+    #   - PORT=$SRV_PORT
+    #   - NODE_ENV=$NODE_ENV
     command: node src/server.js
 
   db:
@@ -32,9 +32,9 @@ services:
       update_config:
         parallelism: 1
         delay: 10s
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+    # environment:
+    #   MONGO_INITDB_ROOT_USERNAME: $MONGO_INITDB_ROOT_USERNAME
+    #   MONGO_INITDB_ROOT_PASSWORD: $MONGO_INITDB_ROOT_PASSWORD
     volumes:
       - db_prod:/data/db
 

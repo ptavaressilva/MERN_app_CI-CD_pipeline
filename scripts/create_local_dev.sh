@@ -1,4 +1,4 @@
 #!/bin/bash
 
 # add -d at the end to run dettached from terminal
-docker-compose -f ./app/docker-compose.dev.yml up
+docker-compose -f ./app/docker-compose.dev.standalone.yml up --build

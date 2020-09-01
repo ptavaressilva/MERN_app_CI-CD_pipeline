@@ -1,26 +1,28 @@
 pipeline {
     agent any
-    environment {
-        SRV_PORT                   = credentials('SRV_PORT')
-        MONGO_URI                  = credentials('MONGO_URI')
-        MONGO_PORT                 = credentials('MONGO_PORT')
-        MONGO_INITDB_ROOT_USERNAME = credentials('MONGO_INITDB_ROOT_USERNAME')
-        MONGO_INITDB_ROOT_PASSWORD = credentials('MONGO_INITDB_ROOT_PASSWORD')
-        NODE_ENV                   = credentials('NODE_ENV')
-    }
     stages {
         stage('Build and run dev') {
+            environment {
+                SRV_PORT=4000
+                MONGO_URI="app_db_1:27017/db?authSource=admin"
+                MONGO_PORT=27017
+                MONGO_INITDB_ROOT_USERNAME = credentials('MONGO_INITDB_ROOT_USERNAME')
+                MONGO_INITDB_ROOT_PASSWORD = credentials('MONGO_INITDB_ROOT_PASSWORD_DEV')
+                NODE_ENV="development"
+            }
             steps {
                 echo "Branch: ${GIT_BRANCH}    Commit: ${GIT_COMMIT}"
                 echo "Jenkins node: ${NODE_NAME}    Build tag: ${BUILD_TAG}"
                 echo "Jenkins workspace: ${WORKSPACE}"
                 dir("./app") {
+                    // Build and start dev
                     sh 'docker-compose -f docker-compose.dev.yml up -d --build'
                 }
             }
         }
         stage('Unit tests') {
             steps {
+                // run Jest tests
                 sh 'docker exec app_client_1 npm test'
             }
             post { // clean-up dev
@@ -34,29 +36,35 @@ pipeline {
             }
         }
         stage('Build and run staging') {
+            environment {
+                SRV_PORT=4000
+                MONGO_URI="app_db_1:27017/db?authSource=admin"
+                MONGO_PORT=27017
+                MONGO_INITDB_ROOT_USERNAME = credentials('MONGO_INITDB_ROOT_USERNAME')
+                MONGO_INITDB_ROOT_PASSWORD = credentials('MONGO_INITDB_ROOT_PASSWORD_STAGING')
+                NODE_ENV="production"
+            }
             steps {
                 dir("./app") {
                     sh 'docker-compose -f docker-compose.staging.yml up -d --build'
-                    // sh 'docker network connect ops_overlay_network app_client_1'
-                    // sh 'docker network connect ops_overlay_network app_server_1'
-                    // sh 'docker network connect ops_overlay_network app_db_1'
+                    // sh 'sleep 120' // wait for DB to be ready (to be replaced with container status check)
                 }
             }
         }
         stage('Integration tests') {
             steps {
-                echo "Run integration tests"
-
-                // Stop staging environment 
-                dir("./app") {
-                    sh 'docker-compose -f docker-compose.staging.yml down'
-                }
+                // Tests if app client reaches the backend and gets data from the database
+                sh './ops/tests/integration.sh'
             }
-            post { // If tests fail, remove failed staging images
-                failure {
+            post {
+                always {
+                    // Stop staging environment 
                     dir("./app") {
                         sh 'docker-compose -f docker-compose.staging.yml down'
                     }
+                }
+                failure {
+                    // // If tests fail, remove failed staging images
                     sh 'docker rmi client'
                     sh 'docker rmi server'
                 }
@@ -86,6 +94,14 @@ pipeline {
             }
         }
         stage('Deploy to prod') {
+            environment {
+                SRV_PORT=4000
+                MONGO_URI="prod_db:27017/db?authSource=admin"
+                MONGO_PORT=27017
+                MONGO_INITDB_ROOT_USERNAME = credentials('MONGO_INITDB_ROOT_USERNAME')
+                MONGO_INITDB_ROOT_PASSWORD = credentials('MONGO_INITDB_ROOT_PASSWORD_PROD')
+                NODE_ENV="production"
+            }
             when {
                 branch 'master'
             }
@@ -98,20 +114,20 @@ pipeline {
                 }
             }
         }
-        // stage('Smoke tests and roll-back if needed') {
-        //     when {
-        //         branch 'master'
-        //     }
-        //     steps {
-        //         sh "curl 'http://localhost'"
-        //     }
-        //     post {
-        //         failure {
-        //             sh "docker service rollback prod_client"
-        //             sh "docker service rollback prod_server"
-        //             sh "docker service rollback prod_db"
-        //         }
-        //     }
-        // }
+        stage('Smoke tests and roll-back if needed') {
+            when {
+                branch 'master'
+            }
+            steps {
+                sh "curl 'http://prod_client:8080'"
+            }
+            post {
+                failure {
+                    sh "docker service rollback prod_client"
+                    sh "docker service rollback prod_server"
+                    sh "docker service rollback prod_db"
+                }
+            }
+        }
     }
 }

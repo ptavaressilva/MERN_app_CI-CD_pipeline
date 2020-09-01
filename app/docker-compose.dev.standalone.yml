@@ -28,10 +28,14 @@ services:
       - MONGO_URI=mongodb://db:27017/db
       - PORT=4000
       - NODE_ENV=development
+    ports:
+      - 4000:4000
     volumes:
       - ./server/src:/app/server/src
     restart: always
   
   db:
     image: mongo
+    ports:
+      - 27017:27017
     restart: always

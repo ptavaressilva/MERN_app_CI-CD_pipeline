@@ -28,4 +28,4 @@ COPY --from=builder /usr/src/app/build /usr/share/nginx/html
 RUN chown nginx.nginx /usr/share/nginx/html/ -R
 
 ## probably REDUNDANT!
-EXPOSE 8080
+# EXPOSE 8080

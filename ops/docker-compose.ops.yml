@@ -9,8 +9,6 @@ services:
     ports:
       - "10022:22"
       - "9001:9001"
-    networks:
-      - ops_overlay_network
   
   jenkins:
     build:
@@ -23,17 +21,8 @@ services:
       - jenkins:/var/jenkins_home
       - /var/run/docker.sock:/var/run/docker.sock # Share the host  docker socket with the container
     networks:
-      - ops_overlay_network
-
-  # jest:
-  #   build:
-  #     context: .
-  #     dockerfile: ./Dockerfiles/Dockerfile.jest
-  #   ports:
-  #     - "8888:8888"
-  #   working_dir: /home/node/app
-  #   volumes:
-  #     - ./tests:/tests
+      - overlay_network
+      - default
 
   registry:
     image: registry
@@ -41,8 +30,48 @@ services:
       - registry:/var/lib/registry
     ports:
       - 5000:5000
+
+  prometheus:
+    image: prom/prometheus:v2.20.1
+    volumes:
+      - ./etc/prometheus/:/etc/prometheus/
+      - ./var/prometheus/prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    ports:
+      - 9090:9090
+    depends_on:
+      - cadvisor
     networks:
-      - ops_overlay_network
+      - overlay_network
+      - default
+  
+  grafana:
+    image: grafana/grafana
+    ports:
+      - 7070:3000
+    volumes:
+      - ./var/grafana/grafana_data:/var/lib/grafana
+      - ./etc/grafana/provisioning/:/etc/grafana/provisioning/
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=grafanasecret
+      - GF_USERS_ALLOW_SIGN_UP=false
+    networks:
+      - overlay_network
+      - default
+   
+  cadvisor:
+    image: google/cadvisor
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    ports:
+      - 5050:8080
 
 volumes:
   gogs: {}
@@ -50,4 +79,5 @@ volumes:
   registry: {}
 
 networks:
-  ops_overlay_network:
+  overlay_network:
+  default:
