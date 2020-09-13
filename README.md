@@ -4,7 +4,7 @@
 
 CI/CD pipelines allow for a fast response to business needs, while other DevOps practices support stable, secure and predictable services, striking the perfect balance  between stability and the speed of change.
 
-This is a final project by Pedro Tavares for a DevOps Bootcamp course at [GeeksHubs Academy](https://geekshubsacademy.com/) (in spanish).
+This is a final project by Pedro Tavares for a DevOps Bootcamp course at [GeeksHubs Academy](https://geekshubsacademy.com/) (in Spanish).
 
 It creates a Continuous Delivery pipeline for a JavaScript/MERN application, with **development**, **staging** and **production** environments, tests and monitoring.
 
@@ -361,7 +361,7 @@ This project was designed and tested in macOS Catalina, with Docker Desktop in s
 
 Oh, where to start?...
 
-There are many, many improvements taht need to be made in order to make this a production ready ssolution. Here are a few, just to get you started:
+There are many, many improvements that need to be made in order to make this a production ready solution. Here are a few, just to get you started:
 
 Security
   
@@ -373,7 +373,7 @@ Availability
 
 - Hosting Jenkins and the other DevOps containers in a local machine only makes sense for demonstration purposes, so the solution should be migrated from a local host to a cloud provider, like AWS, GCP, Digital Ocean on one of many others.
 
-- Jenkins and the other servers that support the pipeline should be clustered (e.g. adding Jenkins workers). 
+- Jenkins and the other servers that support the pipeline should be clustered (e.g. adding Jenkins workers).
 
 - In this example Docker Swarm only has one host. It's quite simple to add workers to swarm.
 
